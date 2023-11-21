@@ -2,8 +2,8 @@
 rm(list=ls()) #limpio el environment
 #setwd("/home/clinux01/Escritorio/Cande Labo Jueves/TP_FINAL/")
 #setwd("/Users/cande/Desktop/Labo/TP_FINAL/")
-setwd("/home/clinux01/Escritorio/Cande Labo Jueves/TP_FINAL/")
-ruta <- "/home/clinux01/Escritorio/Cande Labo Jueves/TP_FINAL/"
+setwd("/home/clinux01/Escritorio/Cande/TP_FINAL/")
+ruta <- "/home/clinux01/Escritorio/Cande/TP_FINAL/"
 #PRONOSTICO DE TEMPERATURA
 #Salidas del modelo operativo WRF del SMN
 
@@ -84,11 +84,39 @@ temp_20_00_arg <- temp_20_00[index_quiero]
 dim(temp_20_00_arg)
 direc_viento_20_00_arg <- direc_viento_20_00[index_quiero]
 veloc_viento_20_00_arg <- veloc_viento_20_00[index_quiero]
+speed_map_20_00 <- data.frame("Velocidad"=veloc_viento_20_00_arg)
+df_arg_20_00_00<- data.frame("Temperatura"=temp_20_00_arg,"Direccion"=direc_viento_20_00_arg,"Velocidad"=veloc_viento_20_00_arg,"Latitudes"=latitudes,"Longitudes"=longitudes)
 
-df_arg_20_00_00<- data.frame("Temperatura"=temp_20_00_arg,"Direccion"=direc_viento_20_00,"Velocidad"=veloc_viento_20_00,"Latitudes"=lati,"Longitudes"=longi)
+#df_arg_20_00_00<- data.frame("Temperatura"=as.vector(temp_20_00),"Latitudes"=as.vector(lati),"Longitudes"=as.vector(longi))
 
-df_arg_20_00_00<- data.frame("Temperatura"=as.vector(temp_20_00),"Latitudes"=as.vector(lati),"Longitudes"=as.vector(longi))
+library(ggplot2)
+library(maps)
+library(mapproj)
+# Get the map outlines
+outlines <- as.data.frame(map("world", plot = FALSE, 
+                              xlim = c(-94.33081,  -35.66919), 
+                              ylim = c( -56.85317,-11.64596))[c("x","y")])
+worldmap <-geom_path(aes(x, y), inherit.aes = FALSE, 
+                     data = outlines, alpha = 0.8, show_guide = FALSE)
 
+#Temperatura
+# The layer for the observed variable
+Tempmap_20_00 <- geom_point(aes(x=Longitudes, y=Latitudes, colour=Temperatura), data=df_arg_20_00_00) 
+
+# Plot the first map
+graf_temp_20_00 <- ggplot() + Tempmap_20_00 + worldmap
+
+#Veloc Viento
+speed_map_20_00 <- geom_point(aes(x=Longitudes, y=Latitudes, colour=Velocidad), data=df_arg_20_00_00) 
+graf_veloc_20_00 <- ggplot() + speed_map_2_20_00 + worldmap
+speed_map_2_20_00<-geom_contour(aes(z = "Velocidad")) 
+#Direccion
+#windRose(df_arg_20_00_00$Velocidad, breaks = c(1,2,3,5,7), angle = 20, cols = "jet", paddle = FALSE,offset =
+           #5, key.header = "Velocidad de viento",key.footer = "metros por segundo", key.position =
+           #"left",main= "Rosa de vientos", width = 3)
+
+
+############################################################
 require(ggplot2)
 library(ggplot2)
 
