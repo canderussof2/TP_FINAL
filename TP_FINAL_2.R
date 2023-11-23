@@ -1,7 +1,8 @@
 #TP FINAL 
 rm(list=ls()) #limpio el environment
-setwd("/Users/cande/Desktop/Labo/TP_FINAL/")
-ruta <- "/Users/cande/Desktop/Labo/TP_FINAL/"
+#setwd("/Users/cande/Desktop/Labo/TP_FINAL/")
+setwd("/home/clinux01/Escritorio/Cande/TP_FINAL/")
+ruta <- "/home/clinux01/Escritorio/Cande/TP_FINAL/"
 
 #PRONOSTICO DE TEMPERATURA
 #Salidas del modelo operativo WRF del SMN
@@ -22,64 +23,6 @@ print(paste("Hola, soy Cande je. Porfi al ingresar la fecha ingresarlo en format
 
 require(lubridate)
 library(lubridate)
-
-descarga <- function (fecha,pronostico){
-  fecha_inicial <- ymd_hms(fecha) 
-  anio <- year(fecha_inicial)
-  mes <- month(fecha_inicial)
-  if(mes<10){
-    mes <- paste0(0,mes)
-  }
-  dia <- day(fecha_inicial)
-  if(dia<10){
-    dia <- paste0(0,dia)
-  }
-  hora <- hour(fecha_inicial)
-  if(hora<10){
-    hora <- paste0(0,hora)
-  }
-  if(pronostico==00){
-    pronostico <- paste0(0,pronostico)
-  }
-  fecha_nombre <- as.numeric(paste0(anio,mes,dia))
-  url <- paste0("https://smn-ar-wrf.s3.amazonaws.com/DATA/WRF/DET/",anio,"/",mes,"/",dia,"/",hora,"/WRFDETAR_01H_",anio,mes,dia,"_",hora,"_0",pronostico,".nc")
-  nombre <- paste0(fecha_nombre,"_",hora,"_",pronostico,".nc")
-  directorio <- paste0(ruta,nombre)
-  
-  download.file(url,directorio)
-}
-#descarga("2023-06-13 00:00:00",00)
-
-################################################################################
-descarga <- function (fecha,pronostico){
-  fecha_inicial <- ymd_hms(fecha) 
-  secuencia <- seq (0,12, by = 12)
-  for(i in 0:2){
-    fecha_inicial <- fecha_inicial + days (i)
-    dia <- day(fecha_inicial)
-    anio <- year(fecha_inicial)
-    mes <- month(fecha_inicial)
-    hora <- hour(fecha_inicial)
-    if(mes<10){
-      mes <- paste0(0,mes)
-    }
-    if(dia<10){
-      dia <- paste0(0,dia)
-    }
-    if(hora<10){
-      hora <- paste0(0,hora)
-    }
-    if(pronostico==00){
-      pronostico <- paste0(0,pronostico)
-    }
-    fecha_nombre <- as.numeric(paste0(anio,mes,dia))
-    url <- paste0("https://smn-ar-wrf.s3.amazonaws.com/DATA/WRF/DET/",anio,"/",mes,"/",dia,"/",hora,"/WRFDETAR_01H_",anio,mes,dia,"_",hora,"_0",pronostico,".nc")
-    nombre <- paste0(fecha_nombre,"_",hora,"_",pronostico,".nc")
-    directorio <- paste0(ruta,nombre)
-    download.file(url,directorio)
-    pronostico <- pronostico + 12
-  }
-}
 
 descarga <- function (fecha){
   fecha_inicial <- ymd_hms(fecha) 
@@ -131,8 +74,7 @@ require(ncdf4)
 library(ncdf4)
 
 #--------------------------------- 20/10/23 ------------------------------------
-descarga("2023-10-20 00:00:00",00) #Descargo el de las 00 del 20/10/23
-
+descarga("2023-10-20 00:00:00") #Descargo el de las 00 del 20/10/23
 ################################################################################
 secuencia <- seq(0,48,by=12)
 for (i in secuencia ){ 
@@ -142,7 +84,7 @@ for (i in secuencia ){
     pronostico <- i
   }
   nombre <- paste0("20231020_00_",pronostico)
-  archivo <- nc_open(nombre) #iria con comillas?
+  archivo <- nc_open(nombre) #iria con comillas. En teoria no
 }
 
 ################################################################################
@@ -156,25 +98,29 @@ lat <- ncvar_get(inicio,"lat")
 time_20_00 <- ncvar_get(inicio,"time") #es cero porque es un tiempo solo, el tiempo cero
 index_quiero<- which( (lat>-50) & (lat< -20) & (long>-75) & (long< -55))
 latitudes <- lat[index_quiero]
+min(latitudes)
 longitudes <- long[index_quiero]
 temp_20_00_arg <- temp_20_00[index_quiero]
 direc_viento_20_00_arg <- direc_viento_20_00[index_quiero]
 veloc_viento_20_00_arg <- veloc_viento_20_00[index_quiero] 
 df_arg_20_00_00 <- data.frame("Temperatura"=temp_20_00_arg,"Direccion"=direc_viento_20_00_arg,"Velocidad"=veloc_viento_20_00_arg,"Latitudes"=latitudes,"Longitudes"=longitudes)
-df_viento_arg_20_00 <-  data.frame("Velocidad"=veloc_viento_20_00_arg,"Direccion"=direc_viento_20_00_arg)
+#df_viento_arg_20_00 <-  data.frame("Velocidad"=veloc_viento_20_00_arg,"Direccion"=direc_viento_20_00_arg)
 #df_arg_20_00_00<- data.frame("Temperatura"=as.vector(temp_20_00),"Latitudes"=as.vector(lati),"Longitudes"=as.vector(longi))
-direcc <- df_viento_arg_20_00$Direccion 
-radianes <- c()
-for (i in 1:nrow(df_viento_arg_20_00)){
-  radian <- direcc[i]*pi/180
-  radianes <- c(radianes, radian)
-}
-df_viento_arg_20_00 <-  data.frame("Velocidad"=veloc_viento_20_00_arg,"Direccion"=radianes)
+#direcc <- df_viento_arg_20_00$Direccion 
+#radianes <- c()
+#for (i in 1:nrow(df_viento_arg_20_00)){
+ # radian <- direcc[i]*pi/180
+ # radianes <- c(radianes, radian)
+#}
+#df_viento_arg_20_00 <-  data.frame("Velocidad"=veloc_viento_20_00_arg,"Direccion"=radianes)
 
 library(ggplot2)
 library(maps)
 library(mapproj)
 library(sf)
+library(metR)
+library(RColorBrewer)
+library(scales)
 # Get the map outlines
 outlines <- as.data.frame(map("world", plot = FALSE, 
                               xlim = c(-94.33081,  -35.66919), 
@@ -184,59 +130,26 @@ worldmap <-geom_path(aes(x, y), inherit.aes = FALSE,
 
 #Temperatura
 # The layer for the observed variable
-Tempmap_20_00 <- geom_point(aes(x=Longitudes, y=Latitudes, colour=Temperatura), data=df_arg_20_00_00) 
+scale <- scale_colour_gradientn(name="Temperatura (°C)",colours=rev(brewer.pal(9,"RdBu")),
+                                limits=c(-max(df_arg_20_00_00$Temperatura),max(df_arg_20_00_00$Temperatura)),
+                                na.value = "white",breaks=pretty_breaks(n=9),aesthetics = c("colour","fill"))
+#Tempmap_20_00 <- ggplot()+geom_point(aes(x=Longitudes, y=Latitudes, colour=Temperatura), data=df_arg_20_00_00) + scale
 
 # Plot the first map
-graf_temp_20_00 <- ggplot() + Tempmap_20_00 + worldmap +ggtitle("Pronostico incial de Temperatura 20/10 ") 
+#graf_temp_20_00 <-Tempmap_20_00 + worldmap + ggtitle("Pronostico incial de Temperatura 20/10 ") #ggplot() es para graficar
 
-#Veloc Viento
-speed_map_20_00 <- geom_point(aes(x=Longitudes, y=Latitudes, colour=Velocidad), data=df_arg_20_00_00) 
-graf_veloc_20_00 <- ggplot() + speed_map_20_00 + worldmap
-speed_map_20_00<- geom_arrow(aes(dx = u, dy = v))
+#Veloc y direcc Viento
+#wind_20_00 <- ggplot(df_arg_20_00_00,aes(x=Longitudes,y=Latitudes))+geom_vector(aes(mag=Velocidad,angle=Direccion),skip=10,size=0.1,color="violet") + coord_quickmap(xlim=c(-80,-50),ylim=c(-52,-18),expand = F)
+#graf_veloc_20_00 <- wind_20_00 + worldmap 
 
+#Grafico
+#arg_20_00 <-  ggplot(df_arg_20_00_00,aes(x=Longitudes,y=Latitudes)) + geom_point(aes(x=Longitudes, y=Latitudes, colour=Temperatura), data=df_arg_20_00_00) + scale + geom_vector(aes(mag=Velocidad,angle=Direccion),skip=10,size=0.1,color="violet") + coord_quickmap(xlim=c(-80,-50),ylim=c(-52,-18),expand = F)  + worldmap
+ 
+#arg_20_00 <- graf_temp_20_00 + geom_vector(aes(mag=Velocidad,angle=Direccion),data=df_arg_20_00_00,skip=10,size=0.1) + coord_quickmap(xlim=c(-80,-50),ylim=c(-52,-18),expand = F)
+#arg_20_00 <- ggplot() + geom_point(aes(x=Longitudes, y=Latitudes, colour=Temperatura), data=df_arg_20_00_00) + scale + geom_vector(aes(mag=Velocidad,angle=Direccion),data=df_arg_20_00_00,skip=10,size=0.1) + coord_quickmap(xlim=c(-80,-50),ylim=c(-52,-18),expand = F)
 
-
-#Direccion
-library(circular)
-windrose(df_viento_arg_20_00,ws = "Velocidad", wd = "Direccion",breaks = c(1,2,3,4,5,6,7,8,9,10,11),cols = c("yellow","green","blue","pink"))
-colors()
-windrose(df_viento_arg_20_00,ws = "Velocidad", wd = "Direccion", breaks = c(1,3,5,7,9,11), angle = 10, cols = c("yellow","green","blue","pink"), paddle = T,offset =
-           5, key.header = "Velocidad de viento",key.footer = "metros por segundo", key.position =
-           "left",main= "Rosa de vientos", width = 1)
-
-windrose(df_viento_arg_20_00, ws = "Velocidad", wd = "Direccion",
-         ws.int = 0.5, angle = 10, type = "default", bias.corr = TRUE, cols
-         = c("yellow","green","blue","pink"), grid.line = NULL, width = 1, seg = NULL, auto.text 
-         = TRUE, breaks = 4, offset = 10, normalise = FALSE, max.freq = 
-           NULL, paddle = TRUE, key.header = NULL, key.footer = "(m/s)", 
-         key.position = "bottom", key = TRUE, dig.lab = 5, statistic = 
-           "prop.count", pollutant = NULL, annotate = TRUE, angle.scale = 
-           315, border = NA)
-
-
-############################################################
-require(ggplot2)
-library(ggplot2)
-
-mapa <- map_data("world")
-head(mapa)
-argentina_mapa <- geom_path(data=mapa,aes(x=long,y=lat,group=group),size=0.1) #gripo 1 es mapa mundial cheqeuar
-g <- ggplot(df_arg_20_00_00, aes(x=Longitudes,y=Latitudes)) + geom_tile(aes(fill =Temperatura)) + argentina_mapa
+arg_20_00 <- ggplot(df_arg_20_00_00,aes(x=Longitudes,y=Latitudes)) + geom_point(aes(x=Longitudes, y=Latitudes, colour=Temperatura), data=df_arg_20_00_00) + scale + geom_vector(aes(mag=Velocidad,angle=Direccion),skip=10,size=0.1) + coord_quickmap(xlim=c(-80,-50),ylim=c(-52,-18),expand = F) + worldmap
+arg_20_00  
   
-  geom_contour(aes(z=Temperatura))# + argentina_mapa
-g<-g+argentina_mapa
-g
-projection <- coord_map(projection="lambert", lat0=30, lat1=60, 
-                        orientation=c(87.5,0,255))
-
-
-#--------------------------------- 20/10/23 ------------------------------------
-descarga("2023-10-20 00:00:00",12) #Descargo el de las 12 del 20/10/23
-pronostico_doce<-nc_open("20231020_00_12.nc") 
-temp_20_12 <- ncvar_get(pronostico_doce,"T2") 
-direc_viento_20_12 <- ncvar_get(pronostico_doce,"dirViento10") 
-veloc_viento_20_12 <- ncvar_get(pronostico_doce,"magViento10")
-time_20_12 <- ncvar_get(pronostico_doce,"time")
-
-nc_open()
-
+  
+  
